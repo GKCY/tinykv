@@ -2,12 +2,13 @@ SHELL := /bin/bash
 PROJECT=tinykv
 GOPATH ?= $(shell go env GOPATH)
 
+
 # Ensure GOPATH is set before running build process.
 ifeq "$(GOPATH)" ""
   $(error Please set the environment variable GOPATH before running `make`)
 endif
 
-GO                  := GO111MODULE=on go
+GO                  := GO111MODULE=on GOPROXY=https://goproxy.cn,direct go
 GOBUILD             := $(GO) build $(BUILD_FLAG) -tags codes
 GOTEST              := $(GO) test -v --count=1 --parallel=1 -p=1
 

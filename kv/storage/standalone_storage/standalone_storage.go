@@ -5,7 +5,6 @@ import (
 	"github.com/pingcap-incubator/tinykv/kv/storage"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/kvrpcpb"
 	"github.com/pingcap-incubator/tinykv/kv/util/engine_util"
-	// "tinykv/kv/util/engine_util"
 	"github.com/Connor1996/badger"
 	"path"
 )

@@ -17,12 +17,17 @@ package raft
 import (
 	"bytes"
 	"fmt"
+	"log"
 	"math/rand"
 	"reflect"
 	"testing"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
+
+func test1Log() {
+	log.Printf("")
+}
 
 // nextEnts returns the appliable entries and updates the applied index
 func nextEnts(r *Raft, s *MemoryStorage) (ents []pb.Entry) {

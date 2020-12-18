@@ -53,6 +53,7 @@ func TestLeaderUpdateTermFromMessage2AA(t *testing.T) {
 // Reference: section 5.1
 func testUpdateTermFromMessage(t *testing.T, state StateType) {
 	r := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, NewMemoryStorage())
+	// log.Printf("状态是%d", state)
 	switch state {
 	case StateFollower:
 		r.becomeFollower(1, 2)
@@ -60,9 +61,10 @@ func testUpdateTermFromMessage(t *testing.T, state StateType) {
 		r.becomeCandidate()
 	case StateLeader:
 		r.becomeCandidate()
+		// log.Printf("断点")
 		r.becomeLeader()
 	}
-
+	// log.Printf("断点")
 	r.Step(pb.Message{MsgType: pb.MessageType_MsgAppend, Term: 2})
 
 	if r.Term != 2 {
@@ -896,19 +898,16 @@ func commitNoopEntry(r *Raft, s *MemoryStorage) {
 		if id == r.id {
 			continue
 		}
-		// log.Printf("%d", id)
+	
 		r.sendAppend(id)
 	}
 	// simulate the response of MessageType_MsgAppend
 	msgs := r.readMessages()
 	for _, m := range msgs {
-		log.Printf("%d", m.MsgType)
-		log.Printf("len(m.Entries) %d", len(m.Entries))
 		if m.MsgType != pb.MessageType_MsgAppend || len(m.Entries) != 1 || m.Entries[0].Data != nil {
 			panic("not a message to append noop entry")
 		}
 		r.Step(acceptAndReply(m))
-		// log.Printf("长度 %d", m.MsgType)
 	}
 	// ignore further messages to refresh followers' commit index
 	r.readMessages()

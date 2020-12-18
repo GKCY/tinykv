@@ -15,6 +15,7 @@
 package raft
 
 import pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
+import "log"
 
 // RaftLog manage the log entries, its struct look like:
 //
@@ -59,10 +60,14 @@ func newLog(storage Storage) *RaftLog {
 	// entries := make([]pb.Entry, 0)
 	lo, _ := storage.FirstIndex()
 	hi, _ := storage.LastIndex()
-	entries, _ := storage.Entries(lo, hi+1)
+	entries, err := storage.Entries(lo, hi+1)
+	if err != nil {
+		panic(err)
+	}
 	raftLog := &RaftLog{
 		storage: storage,
 		entries: entries,
+		stabled: hi,
 	}
 	return raftLog
 }
@@ -77,21 +82,28 @@ func (l *RaftLog) maybeCompact() {
 // unstableEntries return all the unstable entries
 func (l *RaftLog) unstableEntries() []pb.Entry {
 	// Your Code Here (2A).
-	return nil
+	if len(l.entries) > 0 {
+		return l.entries[l.stabled-l.entries[0].Index+1 : len(l.entries)]
+	}
+	return make([]pb.Entry, 0)
 }
 
 // nextEnts returns all the committed but not applied entries
 func (l *RaftLog) nextEnts() (ents []pb.Entry) {
 	// Your Code Here (2A).
-	return nil
+	offset, _ := l.storage.FirstIndex()
+	if len(l.entries) > 0 {
+		return l.entries[l.applied-offset+1 : l.committed-offset+1]
+	}
+	return make([]pb.Entry, 0)
 }
 
 // LastIndex return the last index of the log entries
 func (l *RaftLog) LastIndex() uint64 {
 	// Your Code Here (2A).
-	// if len(l.entries) > 0 {
-	// 	return l.entries[len(l.entries)-1].Index
-	// }
+	if len(l.entries) > 0 {
+		return l.entries[len(l.entries)-1].Index
+	}
 	lastIndex, _ := l.storage.LastIndex()
 	return lastIndex
 }
@@ -99,10 +111,15 @@ func (l *RaftLog) LastIndex() uint64 {
 // Term return the term of the entry in the given index
 func (l *RaftLog) Term(i uint64) (uint64, error) {
 	// Your Code Here (2A).
-	// offset, _ := l.storage.FirstIndex()
-	// if len(l.entries) > 0 && i >= offset {
-	// 	return l.entries[i-offset].Term, nil
-	// }
+	// log.Printf("Term()")
+	offset, _ := l.storage.FirstIndex()
+	// log.Printf("i %d", i)
+	// log.Printf("offset %d", offset)
+	// log.Printf("len(l.entries) %d", len(l.entries))
+	if len(l.entries) > 0 && i >= offset {
+		return l.entries[i-offset].Term, nil
+	}
+	// log.Printf("Term()")
 	return l.storage.Term(i)
 
 }
@@ -115,4 +132,8 @@ func (l *RaftLog)findIndex(i uint64) int {
 		panic("function：findIndex: idx < 0")
 	}
 	return idx
+}
+
+func H() {
+	log.Printf("")
 }

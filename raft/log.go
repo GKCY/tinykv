@@ -56,9 +56,13 @@ type RaftLog struct {
 // to the state that it just commits and applies the latest snapshot.
 func newLog(storage Storage) *RaftLog {
 	// Your Code Here (2A).
+	// entries := make([]pb.Entry, 0)
+	lo, _ := storage.FirstIndex()
+	hi, _ := storage.LastIndex()
+	entries, _ := storage.Entries(lo, hi+1)
 	raftLog := &RaftLog{
 		storage: storage,
-		entries: make([]pb.Entry, 0),
+		entries: entries,
 	}
 	return raftLog
 }
@@ -85,6 +89,9 @@ func (l *RaftLog) nextEnts() (ents []pb.Entry) {
 // LastIndex return the last index of the log entries
 func (l *RaftLog) LastIndex() uint64 {
 	// Your Code Here (2A).
+	// if len(l.entries) > 0 {
+	// 	return l.entries[len(l.entries)-1].Index
+	// }
 	lastIndex, _ := l.storage.LastIndex()
 	return lastIndex
 }
@@ -92,6 +99,20 @@ func (l *RaftLog) LastIndex() uint64 {
 // Term return the term of the entry in the given index
 func (l *RaftLog) Term(i uint64) (uint64, error) {
 	// Your Code Here (2A).
+	// offset, _ := l.storage.FirstIndex()
+	// if len(l.entries) > 0 && i >= offset {
+	// 	return l.entries[i-offset].Term, nil
+	// }
 	return l.storage.Term(i)
 
+}
+
+
+func (l *RaftLog)findIndex(i uint64) int {
+	offset, _ := l.storage.FirstIndex()
+	idx := int(i - offset)
+	if idx < 0 {
+		panic("function：findIndex: idx < 0")
+	}
+	return idx
 }

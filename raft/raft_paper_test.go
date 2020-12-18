@@ -30,11 +30,13 @@ import (
 	"reflect"
 	"sort"
 	"testing"
+	"log"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
 
 func TestFollowerUpdateTermFromMessage2AA(t *testing.T) {
+	log.Printf("")
 	testUpdateTermFromMessage(t, StateFollower)
 }
 func TestCandidateUpdateTermFromMessage2AA(t *testing.T) {
@@ -894,16 +896,19 @@ func commitNoopEntry(r *Raft, s *MemoryStorage) {
 		if id == r.id {
 			continue
 		}
-
+		// log.Printf("%d", id)
 		r.sendAppend(id)
 	}
 	// simulate the response of MessageType_MsgAppend
 	msgs := r.readMessages()
 	for _, m := range msgs {
+		log.Printf("%d", m.MsgType)
+		log.Printf("len(m.Entries) %d", len(m.Entries))
 		if m.MsgType != pb.MessageType_MsgAppend || len(m.Entries) != 1 || m.Entries[0].Data != nil {
 			panic("not a message to append noop entry")
 		}
 		r.Step(acceptAndReply(m))
+		// log.Printf("长度 %d", m.MsgType)
 	}
 	// ignore further messages to refresh followers' commit index
 	r.readMessages()

@@ -27,10 +27,10 @@ package raft
 
 import (
 	"fmt"
+	"log"
 	"reflect"
 	"sort"
 	"testing"
-	"log"
 
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
@@ -61,10 +61,8 @@ func testUpdateTermFromMessage(t *testing.T, state StateType) {
 		r.becomeCandidate()
 	case StateLeader:
 		r.becomeCandidate()
-		// log.Printf("断点")
 		r.becomeLeader()
 	}
-	// log.Printf("断点")
 	r.Step(pb.Message{MsgType: pb.MessageType_MsgAppend, Term: 2})
 
 	if r.Term != 2 {
@@ -898,7 +896,7 @@ func commitNoopEntry(r *Raft, s *MemoryStorage) {
 		if id == r.id {
 			continue
 		}
-	
+
 		r.sendAppend(id)
 	}
 	// simulate the response of MessageType_MsgAppend

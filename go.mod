@@ -29,7 +29,8 @@ require (
 	github.com/uudashr/gopkgs/v2 v2.1.2 // indirect
 	go.etcd.io/etcd v0.5.0-alpha.5.0.20191023171146-3cf2f69b5738
 	go.uber.org/zap v1.14.0
-	golang.org/x/net v0.0.0-20200226121028-0de0cce0169b
+	golang.org/x/net v0.0.0-20201021035429-f5854403a974
+	golang.org/x/tools/gopls v0.6.1 // indirect
 	google.golang.org/grpc v1.25.1
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0
 )

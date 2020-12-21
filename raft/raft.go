@@ -182,7 +182,6 @@ func newRaft(c *Config) *Raft {
 		Prs:                   prs,
 		votes:                 make(map[uint64]bool),
 		RaftLog:               newLog(c.Storage),
-		msgs:                  make([]pb.Message, 0),
 		Lead:                  None,
 		heartbeatTimeout:      c.HeartbeatTick,
 		electionTimeout:       c.ElectionTick,
@@ -362,13 +361,11 @@ func (r *Raft) becomeLeader() {
 	r.Prs[r.id].Match = r.RaftLog.LastIndex()
 	r.Prs[r.id].Next = r.Prs[r.id].Match + 1
 
-	for peer := range r.Prs {
-		if peer != r.id {
-			r.sendAppend(peer)
-		}
+	r.bcastAppend()
+	if len(r.Prs) == 1 {
+		r.RaftLog.committed = r.Prs[r.id].Match
 	}
-
-	// for peerId := range r.Prs{
+	// for peerId := range r.Prs {
 	// 	if peerId != r.id {
 	// 		r.sendHeartbeat(peerId)
 	// 	}
@@ -665,5 +662,17 @@ func (r *Raft) bcastAppend() {
 		if peer != r.id {
 			r.sendAppend(peer)
 		}
+	}
+}
+
+func (r *Raft) softState() *SoftState {
+	return &SoftState{Lead: r.Lead, RaftState: r.State}
+}
+
+func (r *Raft) hardState() pb.HardState {
+	return pb.HardState{
+		Term:   r.Term,
+		Vote:   r.Vote,
+		Commit: r.RaftLog.committed,
 	}
 }

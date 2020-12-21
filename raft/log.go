@@ -14,8 +14,9 @@
 
 package raft
 
-import pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
-import "log"
+import (
+	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
+)
 
 // RaftLog manage the log entries, its struct look like:
 //
@@ -68,6 +69,7 @@ func newLog(storage Storage) *RaftLog {
 		storage: storage,
 		entries: entries,
 		stabled: hi,
+		// applied: lo-1,
 	}
 	return raftLog
 }
@@ -111,29 +113,19 @@ func (l *RaftLog) LastIndex() uint64 {
 // Term return the term of the entry in the given index
 func (l *RaftLog) Term(i uint64) (uint64, error) {
 	// Your Code Here (2A).
-	// log.Printf("Term()")
 	offset, _ := l.storage.FirstIndex()
-	// log.Printf("i %d", i)
-	// log.Printf("offset %d", offset)
-	// log.Printf("len(l.entries) %d", len(l.entries))
 	if len(l.entries) > 0 && i >= offset {
 		return l.entries[i-offset].Term, nil
 	}
-	// log.Printf("Term()")
 	return l.storage.Term(i)
 
 }
 
-
-func (l *RaftLog)findIndex(i uint64) int {
+func (l *RaftLog) findIndex(i uint64) int {
 	offset, _ := l.storage.FirstIndex()
 	idx := int(i - offset)
 	if idx < 0 {
 		panic("function：findIndex: idx < 0")
 	}
 	return idx
-}
-
-func H() {
-	log.Printf("")
 }
